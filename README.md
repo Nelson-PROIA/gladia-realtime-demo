@@ -859,7 +859,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## 🙏 Credits
 
-**Built by:** [Your Name]  
+**Built by:** Nelson PROIA 
 **Purpose:** Case study demonstration for Gladia Real-Time API V2  
 **Powered by:** [Gladia](https://gladia.io/) - Speech-to-Text API
 

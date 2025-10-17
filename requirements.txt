@@ -1,0 +1,47 @@
+# ============================================================================
+# Gladia Real-Time Transcription Demo - Python Dependencies
+# ============================================================================
+# 
+# Install all dependencies:
+#   pip install -r requirements.txt
+#
+# Update to latest versions:
+#   pip install --upgrade -r requirements.txt
+#
+# Freeze current versions:
+#   pip freeze > requirements-lock.txt
+# ============================================================================
+
+# Core Web Framework
+Flask==3.0.0                    # Lightweight WSGI web application framework
+Werkzeug==3.1.3                 # WSGI utility library (Flask dependency)
+Jinja2==3.1.6                   # Template engine (Flask dependency)
+MarkupSafe==3.0.3               # Safe string handling (Jinja2 dependency)
+click==8.3.0                    # Command line interface toolkit (Flask dependency)
+itsdangerous==2.2.0             # Secure data signing (Flask dependency)
+blinker==1.9.0                  # Fast object-to-object signaling (Flask dependency)
+
+# WebSocket Support
+Flask-SocketIO==5.3.6           # WebSocket integration for Flask (bidirectional client communication)
+python-socketio==5.11.0         # Python Socket.IO server implementation
+python-engineio==4.12.3         # Engine.IO server (Socket.IO transport layer)
+simple-websocket==1.1.0         # Simple WebSocket server/client (Socket.IO dependency)
+eventlet==0.35.2                # Concurrent networking library (async mode for Socket.IO)
+greenlet==3.2.4                 # Lightweight concurrent programming (eventlet dependency)
+dnspython==2.8.0                # DNS toolkit (eventlet dependency)
+bidict==0.23.1                  # Bidirectional dict (Socket.IO dependency)
+
+# WebSocket Client (Gladia Connection)
+websocket-client==1.7.0         # WebSocket client library for connecting to Gladia Real-Time API
+wsproto==1.2.0                  # WebSocket protocol implementation (websocket-client dependency)
+h11==0.16.0                     # HTTP/1.1 protocol (wsproto dependency)
+
+# HTTP Client (Gladia API)
+requests==2.31.0                # HTTP library for Gladia session initialization (POST /v2/live)
+urllib3==2.5.0                  # HTTP client (requests dependency)
+certifi==2025.10.5              # SSL certificates (requests dependency)
+charset-normalizer==3.4.4       # Character encoding detection (requests dependency)
+idna==3.11                      # Internationalized domain names (requests dependency)
+
+# Configuration Management
+python-dotenv==1.0.0            # Load environment variables from .env file

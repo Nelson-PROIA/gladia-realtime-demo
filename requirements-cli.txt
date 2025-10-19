@@ -1,0 +1,2 @@
+# CLI demo dependencies (in addition to requirements.txt)
+pyaudio==0.2.14

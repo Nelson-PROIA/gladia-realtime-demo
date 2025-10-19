@@ -533,14 +533,26 @@ A minimal command-line tool to quickly test Gladia's API. Perfect for testing, d
 
 **1. Install dependencies:**
 ```bash
+# Web app dependencies
 pip install -r requirements.txt
+
+# CLI dependencies (includes PyAudio for microphone access)
+pip install -r requirements-cli.txt
 ```
 
-**Note:** On macOS, if PyAudio fails to install:
+**Note:** PyAudio requires system dependencies. On macOS:
 ```bash
 brew install portaudio
 pip install pyaudio
 ```
+
+On Linux:
+```bash
+sudo apt-get install portaudio19-dev python3-pyaudio
+pip install pyaudio
+```
+
+**Important:** The web app does NOT need PyAudio (only the CLI demo). If deploying to Render, use only `requirements.txt`.
 
 **2. Run the CLI:**
 ```bash
@@ -672,7 +684,8 @@ gladia-realtime-demo/
 │   ├── gladia-logo.png      # Logo image (visible in pages)
 │   └── gladia-logo.ico      # Favicon (browser tab icon)
 │
-├── requirements.txt         # Python dependencies
+├── requirements.txt         # Web app dependencies (Render uses this)
+├── requirements-cli.txt     # CLI dependencies (PyAudio - optional)
 ├── .env.example            # Environment variable template
 ├── .gitignore              # Git ignore rules
 └── README.md               # This file (comprehensive documentation)

@@ -28,7 +28,7 @@ Gladia API Integration:
 """
 
 from typing import Dict, Any, Optional, List
-from flask import Flask, send_from_directory, request, Response
+from flask import Flask, send_from_directory, request, Response, session, jsonify
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
 import os
@@ -43,26 +43,57 @@ load_dotenv()
 # Flask application setup
 app = Flask(__name__, static_folder='static', template_folder='static')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secret_key')
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Gladia API configuration
 GLADIA_API_KEY: Optional[str] = os.getenv('GLADIA_API_KEY')
 GLADIA_API_URL: str = "https://api.gladia.io/v2/live"
 
+# Access control configuration
+ACCESS_KEY: Optional[str] = os.getenv('ACCESS_KEY')
+
 # Store active WebSocket connections and session data per client
-# Structure: {client_sid: {'ws': WebSocketApp, 'config': {...}}}
 active_sessions: Dict[str, Dict[str, Any]] = {}
 
 
 @app.route('/')
 def index() -> Response:
     """
-    Serve the main HTML page.
+    Serve the access control page or main application.
+    
+    If ACCESS_KEY is configured, users must authenticate first.
+    Otherwise, serve the main application directly.
     
     Returns:
-        Response: The index.html file from the static directory
+        Response: Login page or main application HTML
     """
-    return send_from_directory('static', 'index.html')
+    if not ACCESS_KEY:
+        return send_from_directory('static', 'index.html')
+    
+    if session.get('authenticated'):
+        return send_from_directory('static', 'index.html')
+    
+    return send_from_directory('static', 'login.html')
+
+
+@app.route('/verify-access', methods=['POST'])
+def verify_access() -> Response:
+    """
+    Verify the provided access key.
+    
+    Returns:
+        Response: JSON with success status
+    """
+    data = request.get_json()
+    provided_key = data.get('key', '')
+    
+    if ACCESS_KEY and provided_key == ACCESS_KEY:
+        session.permanent = True
+        session['authenticated'] = True
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False, 'error': 'Invalid access key'}), 401
 
 
 @app.route('/favicon.ico')
@@ -113,14 +144,17 @@ def handle_disconnect() -> None:
     session data when the browser disconnects. This prevents resource
     leaks and ensures proper cleanup.
     """
-    print(f'Client disconnected: {request.sid}')
-    
-    if request.sid in active_sessions:
-        session_data = active_sessions[request.sid]
-        ws = session_data.get('ws')
-        if ws:
-            ws.close()
-        del active_sessions[request.sid]
+    try:
+        print(f'Client disconnected: {request.sid}')
+        
+        if request.sid in active_sessions:
+            session_data = active_sessions[request.sid]
+            ws = session_data.get('ws')
+            if ws:
+                ws.close()
+            del active_sessions[request.sid]
+    except Exception as e:
+        print(f'Error during disconnect cleanup: {e}')
 
 
 @socketio.on('start_stream')
@@ -536,7 +570,7 @@ if __name__ == '__main__':
     
     if debug:
         print('Running in DEBUG mode')
-        print('Open http://localhost:8000 in your browser')
+        print(f'Open http://localhost:{port} in your browser')
         socketio.run(app, host='0.0.0.0', port=port, debug=True, allow_unsafe_werkzeug=True)
     else:
         print('Running in PRODUCTION mode')

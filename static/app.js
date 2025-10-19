@@ -42,6 +42,9 @@ let audioContext = null
 /** @type {boolean} Current recording state */
 let isRecording = false
 
+/** @type {boolean} Whether audio sending is paused (e.g., during stop confirmation) */
+let isPaused = false
+
 /** @type {string} User's custom speaker name for Speaker 0 */
 let speakerName = ''
 
@@ -75,6 +78,9 @@ const codeSwitchingCheckbox = document.getElementById('code-switching')
 const customVocabularyTextarea = document.getElementById('custom-vocabulary')
 const langCount = document.getElementById('lang-count')
 const clearLanguagesBtn = document.getElementById('clear-languages')
+const stopModal = document.getElementById('stop-modal')
+const cancelStopBtn = document.getElementById('cancel-stop')
+const confirmStopBtn = document.getElementById('confirm-stop')
 const restartModal = document.getElementById('restart-modal')
 const cancelRestartBtn = document.getElementById('cancel-restart')
 const confirmRestartBtn = document.getElementById('confirm-restart')
@@ -92,6 +98,8 @@ languageSelect.addEventListener('click', handleLanguageClick)
 languageSearch.addEventListener('input', filterLanguages)
 clearLanguagesBtn.addEventListener('click', clearLanguages)
 customVocabularyTextarea.addEventListener('blur', validateCustomVocabulary)
+cancelStopBtn.addEventListener('click', closeModal)
+confirmStopBtn.addEventListener('click', confirmStop)
 cancelRestartBtn.addEventListener('click', closeModal)
 confirmRestartBtn.addEventListener('click', confirmRestart)
 
@@ -254,10 +262,21 @@ function toggleAdvanced() {
  */
 function handleControlClick() {
     if (isRecording) {
-        stopStreaming()
+        showStopModal()
     } else {
         showRestartModal()
     }
+}
+
+/**
+ * Show confirmation modal for stop action.
+ * Pauses audio sending while modal is open.
+ * 
+ * @returns {void}
+ */
+function showStopModal() {
+    isPaused = true
+    stopModal.classList.add('active')
 }
 
 /**
@@ -270,12 +289,30 @@ function showRestartModal() {
 }
 
 /**
- * Close the restart confirmation modal.
+ * Close any active modal.
+ * Resumes audio sending if stop modal was canceled.
  * 
  * @returns {void}
  */
 function closeModal() {
+    const wasStopModalOpen = stopModal.classList.contains('active')
+    stopModal.classList.remove('active')
     restartModal.classList.remove('active')
+    
+    // Resume audio if stop was canceled
+    if (wasStopModalOpen && isRecording) {
+        isPaused = false
+    }
+}
+
+/**
+ * Confirm stop action and end recording session.
+ * 
+ * @returns {void}
+ */
+function confirmStop() {
+    closeModal()
+    stopStreaming()
 }
 
 /**
@@ -405,7 +442,7 @@ function startRecording(stream) {
     processor.connect(audioContext.destination)
     
     processor.onaudioprocess = (e) => {
-        if (!isRecording) return
+        if (!isRecording || isPaused) return
         
         const inputData = e.inputBuffer.getChannelData(0)
         const pcmData = convertFloat32ToInt16(inputData)
@@ -554,7 +591,7 @@ function displayTranscript(data) {
     const existingPartial = transcriptContent.querySelector('.partial')
     
     const displayName = speaker_name || `Speaker ${speaker}`
-    const formattedTime = formatTimestamp(timestamp)
+    const formattedTime = formatTimestamp(timestamp, end_time)
     
     if (is_final) {
         if (existingPartial) {
@@ -584,6 +621,9 @@ function displayTranscript(data) {
         if (existingPartial) {
             existingPartial.querySelector('.transcript-text').textContent = text
             existingPartial.querySelector('.speaker-label').textContent = displayName
+            if (formattedTime && existingPartial.querySelector('.timestamp')) {
+                existingPartial.querySelector('.timestamp').textContent = formattedTime
+            }
         } else {
             const line = document.createElement('div')
             line.className = `transcript-line partial speaker-${speaker}`
@@ -600,18 +640,17 @@ function displayTranscript(data) {
 }
 
 /**
- * Format timestamp in seconds to MM:SS display format.
+ * Format timestamp range in seconds to [start - end] display format.
  * 
- * @param {number|null|undefined} seconds - Time in seconds
- * @returns {string|null} Formatted time string or null if invalid
+ * @param {number|null|undefined} start - Start time in seconds
+ * @param {number|null|undefined} end - End time in seconds
+ * @returns {string|null} Formatted time range string or null if invalid
  */
-function formatTimestamp(seconds) {
-    if (seconds === null || seconds === undefined) return null
+function formatTimestamp(start, end) {
+    if (start === null || start === undefined) return null
+    if (end === null || end === undefined) return null
     
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+    return `${start.toFixed(2)}s - ${end.toFixed(2)}s`
 }
 
 /**

@@ -1,0 +1,88 @@
+.login-wrapper {
+    width: 100%;
+    min-width: 500px;
+    min-height: 100vh;
+    display: flex;
+    padding: 2rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 500px;
+    width: 100%;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.login-input {
+    width: 100%;
+    padding: 0.75rem 3rem 0.75rem 1rem;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) - 2px);
+    color: hsl(var(--foreground));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    transition: color 0.2s;
+}
+
+.toggle-password:hover {
+    color: hsl(var(--foreground));
+}
+
+.login-error {
+    display: none;
+    padding: 0.75rem 1rem;
+    background: hsl(0 84% 60% / 0.15);
+    border: 1px solid hsl(0 84% 60% / 0.3);
+    border-radius: calc(var(--radius) - 2px);
+    color: hsl(0 84% 90%);
+    font-size: 0.875rem;
+}
+
+.login-error.show {
+    display: block;
+}
+
+.login-error.shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+

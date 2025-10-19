@@ -15,6 +15,7 @@ A production-ready demonstration of **Gladia's Real-Time API V2** for live speec
 - [Architecture](#-architecture)
 - [Gladia API Integration](#-gladia-api-integration)
 - [Quick Start](#-quick-start)
+- [CLI Demo](#-cli-demo)
 - [Project Structure](#-project-structure)
 - [Configuration](#-configuration)
 - [Deployment](#-deployment)
@@ -44,7 +45,8 @@ A production-ready demonstration of **Gladia's Real-Time API V2** for live speec
 - **Language Search**: Filter through 87 languages instantly
 - **Export Functionality**: Download transcripts as JSON with session metadata
 - **Responsive Design**: Works on desktop and mobile browsers
-- **Confirmation Modals**: Prevent accidental data loss
+- **Confirmation Modals**: Prevent accidental data loss on stop/restart
+- **Precise Timestamps**: Each transcript shows start-end time range
 
 ---
 
@@ -459,8 +461,9 @@ def on_error(ws, error):
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Web Application
 
+**Prerequisites:**
 - Python 3.8 or higher
 - Modern web browser (Chrome 80+, Firefox 75+, Safari 14+, Edge 80+)
 - Gladia API key ([Get one free](https://app.gladia.io/))
@@ -522,19 +525,142 @@ http://localhost:8000
 
 ---
 
+## 🖥️ CLI Demo
+
+A minimal command-line tool to quickly test Gladia's API. Perfect for testing, debugging, or understanding the basics.
+
+### Quick Start
+
+**1. Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+**Note:** On macOS, if PyAudio fails to install:
+```bash
+brew install portaudio
+pip install pyaudio
+```
+
+**2. Run the CLI:**
+```bash
+python cli.py
+```
+
+**3. Start speaking!** You'll see:
+```
+Connected to Gladia. Start speaking!
+
+[Speaker 0] Hello this is...        # ← Partial (updates as you speak)
+[Speaker 0] Hello this is a test    # ← Final (when you pause)
+```
+
+**4. Stop:** Press `CTRL+C`
+
+### Configuration
+
+Edit parameters at the top of `cli.py`:
+
+```python
+# Transcription settings (same defaults as web demo)
+SHOW_PARTIAL_RESULTS = True      # Show transcription as you speak
+LANGUAGES = []                    # Empty = auto-detect, or ['en'], ['en', 'fr']
+CODE_SWITCHING = False            # Detect language per utterance
+CUSTOM_VOCABULARY = []            # Add custom words: ['Gladia', 'API']
+
+# Display settings
+CLEAR_PARTIAL_LINE = True         # Clear partial when final arrives
+ENABLE_VAD = False                # Voice Activity Detection - only send when speaking
+VAD_THRESHOLD = 100               # Volume threshold (increase if too sensitive)
+DEBUG_MESSAGES = False            # Show all Gladia messages (for debugging)
+```
+
+### Features
+
+- ✅ Real-time microphone capture
+- ✅ Live partial transcripts (see words as you speak)
+- ✅ Speaker diarization
+- ✅ Voice Activity Detection (only sends audio when speaking)
+- ✅ All Gladia API options configurable
+- ✅ Clean output (no spam from audio acknowledgments)
+- ✅ ~200 lines of simple Python code
+- ✅ Same defaults as web demo
+
+### Example Output
+
+```
+============================================================
+Gladia Real-Time Transcription
+============================================================
+
+Creating session with payload:
+{
+  "encoding": "wav/pcm",
+  "sample_rate": 16000,
+  "messages_config": {
+    "receive_partial_transcripts": true,
+    "receive_final_transcripts": true
+  }
+}
+
+Session created: abc123...
+
+Microphone ready
+Connected. Start speaking!
+============================================================
+
+[0.00s - 1.23s] [Speaker 0] [Partial] - This is a test
+[0.00s - 2.45s] [Speaker 0] [Final] - This is a test of the Gladia API
+[2.50s - 4.10s] [Speaker 0] [Partial] - It works great
+[2.50s - 5.67s] [Speaker 0] [Final] - It works great with real-time transcription
+
+============================================================
+Session terminated
+============================================================
+```
+
+### Use Cases
+
+- 🧪 Quick API testing
+- 🔍 Debugging audio issues
+- 📚 Learning how Gladia API works
+- ⚡ Rapid prototyping
+- 🎓 Educational examples
+
+### CLI vs Web App
+
+| Feature | CLI Demo | Web App |
+|---------|----------|---------|
+| **Setup Time** | 30 seconds | 2 minutes |
+| **Lines of Code** | ~200 | ~2000 |
+| **Dependencies** | Same + PyAudio | 25 packages |
+| **Interface** | Terminal | Browser UI |
+| **VAD** | Yes (configurable) | No |
+| **Use Case** | Testing/Learning | Production/Demo |
+
+---
+
 ## 📁 Project Structure
 
 ```
 gladia-realtime-demo/
-├── app.py                    # Flask backend with Gladia integration
+├── app.py                    # Flask web application (full-featured)
 │   ├── WebSocket routing (Socket.IO)
 │   ├── Session initialization (POST /v2/live)
 │   ├── Audio streaming (binary frames)
 │   └── Transcript forwarding
 │
-├── static/                   # Frontend assets
-│   ├── index.html           # Single-page application UI
-│   ├── style.css            # Shadcn-inspired dark theme
+├── cli.py                    # Minimal CLI demo (~200 lines)
+│   ├── Direct microphone capture (PyAudio)
+│   ├── Voice Activity Detection (VAD)
+│   ├── Real-time transcription display
+│   └── Easy parameter configuration
+│
+├── static/                   # Frontend assets (web app)
+│   ├── index.html           # Main application UI
+│   ├── login.html           # Access control page (if ACCESS_KEY set)
+│   ├── style.css            # Main styles (shadcn-inspired dark theme)
+│   ├── login.css            # Login page specific styles
 │   └── app.js               # Frontend logic & audio processing
 │       ├── Microphone capture (Web Audio API)
 │       ├── Audio resampling (16kHz)
@@ -543,12 +669,12 @@ gladia-realtime-demo/
 │       └── UI state management
 │
 ├── assets/                   # Static assets
-│   ├── gladia-logo.png      # Branding image
-│   └── gladia-logo.ico      # Favicon
+│   ├── gladia-logo.png      # Logo image (visible in pages)
+│   └── gladia-logo.ico      # Favicon (browser tab icon)
 │
-├── requirements.txt         # Python dependencies (pinned versions)
+├── requirements.txt         # Python dependencies
 ├── .env.example            # Environment variable template
-├── .gitignore              # Git ignore rules (comprehensive)
+├── .gitignore              # Git ignore rules
 └── README.md               # This file (comprehensive documentation)
 ```
 
@@ -578,7 +704,13 @@ gladia-realtime-demo/
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `GLADIA_API_KEY` | Yes | Your Gladia API key | `gladia_abc123...` |
-| `SECRET_KEY` | Yes | Flask session secret | `a1b2c3d4e5f6...` |
+| `SECRET_KEY` | Yes (if using ACCESS_KEY) | Flask session secret | Generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `ACCESS_KEY` | No | Access control key for demo protection | `my_secret_key_123` |
+
+**Note on ACCESS_KEY:**
+- If set, users must enter this key before accessing the demo
+- If not set or empty, the demo is publicly accessible
+- Useful for controlling access to your Render deployment
 
 ### Gladia Settings (UI)
 
@@ -642,6 +774,7 @@ git push -u origin main
 4. **Environment Variables:**
    - Add `GLADIA_API_KEY` = your_api_key_from_gladia_dashboard
    - Add `SECRET_KEY` = generate with `python -c "import secrets; print(secrets.token_hex(32))"`
+   - Add `ACCESS_KEY` (optional) = your_custom_access_key_for_demo_protection
 
 5. **Deploy:**
    - Click "Create Web Service"

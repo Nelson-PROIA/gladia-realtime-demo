@@ -1,5 +1,5 @@
 /**
- * Gladia Real-Time Transcription Demo - Frontend Client
+ * Gladia Realtime Transcription Demo - Frontend Client
  * 
  * This client-side application captures microphone audio, processes it for Gladia's API,
  * and displays real-time transcription results with speaker diarization.
@@ -110,20 +110,39 @@ confirmRestartBtn.addEventListener('click', confirmRestart)
 /**
  * Update the language count display based on selected languages.
  * Shows "(auto-detect)" when no languages selected, or count of selected languages.
+ * Also toggles code_switching checkbox visibility based on language selection.
+ * 
+ * Per Gladia API spec: code_switching only applies when no specific languages are set.
  * 
  * @returns {void}
  */
 function updateLanguageCount() {
     const count = selectedLanguages.length
+    const codeSwitchingGroup = codeSwitchingCheckbox.closest('.form-group')
+    
     if (count === 0) {
         langCount.textContent = '(auto-detect)'
         clearLanguagesBtn.disabled = true
+        // Show code_switching option - it's relevant for auto-detect mode
+        if (codeSwitchingGroup) {
+            codeSwitchingGroup.style.display = 'block'
+        }
     } else if (count === 1) {
         langCount.textContent = '(1 selected)'
         clearLanguagesBtn.disabled = false
+        // Hide code_switching - not applicable when specific language(s) selected
+        if (codeSwitchingGroup) {
+            codeSwitchingGroup.style.display = 'none'
+            codeSwitchingCheckbox.checked = false  // Reset to default
+        }
     } else {
         langCount.textContent = `(${count} selected)`
         clearLanguagesBtn.disabled = false
+        // Hide code_switching - not applicable when specific language(s) selected
+        if (codeSwitchingGroup) {
+            codeSwitchingGroup.style.display = 'none'
+            codeSwitchingCheckbox.checked = false  // Reset to default
+        }
     }
 }
 

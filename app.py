@@ -1,7 +1,7 @@
 """
-Gladia Real-Time Transcription Demo - Flask Backend
+Gladia Realtime Transcription Demo - Flask Backend
 
-This application demonstrates real-time speech transcription using Gladia's Real-Time API V2.
+This application demonstrates real-time speech transcription using Gladia's Realtime API V2.
 It provides a WebSocket-based architecture that bridges browser audio capture with Gladia's
 transcription service, enabling live speech-to-text with speaker diarization.
 
@@ -17,7 +17,7 @@ Architecture:
 Key Components:
     - Flask: HTTP server and static file serving
     - Flask-SocketIO: Bidirectional WebSocket communication with browser
-    - websocket-client: Connection to Gladia's Real-Time API V2
+    - websocket-client: Connection to Gladia's Realtime API V2
     - Threading: Async handling of WebSocket connections per client
 
 Gladia API Integration:
@@ -160,7 +160,7 @@ def handle_disconnect() -> None:
 @socketio.on('start_stream')
 def handle_start_stream(config: Optional[Dict[str, Any]] = None) -> None:
     """
-    Initialize a new Gladia Real-Time transcription session.
+    Initialize a new Gladia Realtime transcription session.
     
     This is the entry point for starting a transcription session. It receives
     configuration from the browser, stores it for the session, and initiates
@@ -224,9 +224,9 @@ def start_gladia_session(
     custom_vocabulary: Optional[List[str]] = None
 ) -> None:
     """
-    Initialize a Gladia Real-Time API session via HTTP POST.
+    Initialize a Gladia Realtime API session via HTTP POST.
     
-    This function implements the Gladia Real-Time API V2 session initialization flow:
+    This function implements the Gladia Realtime API V2 session initialization flow:
     1. Construct the configuration payload
     2. POST to /v2/live endpoint to create a session
     3. Extract the WebSocket URL from the response
@@ -281,11 +281,15 @@ def start_gladia_session(
     }
     
     # Build language configuration
+    # Per Gladia API spec: code_switching is only applicable when no specific languages are set
     language_config: Dict[str, Any] = {}
     if languages and len(languages) > 0:
         language_config['languages'] = languages
-    if code_switching:
-        language_config['code_switching'] = True
+        # Ignore code_switching when specific languages are provided
+    else:
+        # Auto-detect mode: code_switching determines per-utterance vs first-utterance detection
+        if code_switching:
+            language_config['code_switching'] = True
     
     # Build base payload with required audio format and message config
     payload: Dict[str, Any] = {
@@ -346,7 +350,7 @@ def start_gladia_session(
 
 def connect_to_gladia_websocket(client_sid: str, ws_url: str) -> None:
     """
-    Establish WebSocket connection to Gladia Real-Time API.
+    Establish WebSocket connection to Gladia Realtime API.
     
     This function creates a persistent WebSocket connection to Gladia's API
     for bidirectional audio streaming and transcript reception. The connection
@@ -453,6 +457,7 @@ def connect_to_gladia_websocket(client_sid: str, ws_url: str) -> None:
     ) -> None:
         """Clean up session on WebSocket closure."""
         print(f'WebSocket closed: {close_status_code} - {close_msg}')
+        
         if client_sid in active_sessions:
             del active_sessions[client_sid]
     
@@ -565,7 +570,7 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 8000))
     debug = os.getenv('FLASK_ENV') != 'production'
     
-    print('Starting Gladia Real-Time Transcription Demo...')
+    print('Starting Gladia Realtime Transcription Demo...')
     print(f'Server will run on port {port}')
     
     if debug:
